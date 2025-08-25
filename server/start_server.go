@@ -12,13 +12,13 @@ import (
 func StartServer() {
 	utils.LoadEnv()
 
-	serverPort := utils.GetEnv("SERVER_PORT", "8080")
+	serverPort := utils.GetEnv("SERVER_PORT", "")
 
-	username := utils.GetEnv("DB_USERNAME", "public_user")
-	password := utils.GetEnv("DB_PASSWORD", "public@123")
-	host := utils.GetEnv("DB_HOST", "dmt1.intellicar.in")
-	port := utils.GetEnv("DB_PORT", "3306")
-	schema := utils.GetEnv("DB_SCHEMA", "dmt")
+	username := utils.GetEnv("DB_USERNAME", "")
+	password := utils.GetEnv("DB_PASSWORD", "")
+	host := utils.GetEnv("DB_HOST", "")
+	port := utils.GetEnv("DB_PORT", "")
+	schema := utils.GetEnv("DB_SCHEMA", "")
 
 	err := config.ConnectDB(username, password, host, port, schema)
 	if err != nil {
