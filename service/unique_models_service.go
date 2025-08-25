@@ -19,7 +19,7 @@ func CreateUniqueModels(model []model.UniqueModel) error {
 		res := config.DB.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "groupid"}, {Name: "modelid"}},
 			DoNothing: true,
-		}).Omit("groupno")
+		}).Omit("no")
 		res.Create(&batch)
 		if res.Error != nil {
 			return res.Error
@@ -31,7 +31,7 @@ func CreateUniqueModels(model []model.UniqueModel) error {
 // to get unique models from database
 func GetUniqueModels() ([]model.UniqueModel, error) {
 	var models []model.UniqueModel
-	res := config.DB.Order("groupno asc").Find(&models)
+	res := config.DB.Order("no asc").Find(&models)
 	if res.Error != nil {
 		return nil, res.Error
 	}

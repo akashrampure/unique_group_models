@@ -1,7 +1,7 @@
 package model
 
 type UniqueModel struct {
-	GroupNo   int    `gorm:"column:groupno;" json:"groupno"`
+	No        int    `gorm:"column:no" json:"no"`
 	GroupId   string `gorm:"column:groupid" json:"groupid"`
 	ModelId   string `gorm:"column:modelid" json:"modelid"`
 	GroupName string `gorm:"column:groupname" json:"groupname"`
