@@ -5,10 +5,28 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"vds/config"
 	"vds/model"
 	"vds/server"
 	"vds/service"
+	"vds/utils"
 )
+
+func init() {
+	utils.LoadEnv()
+
+	username := utils.GetEnv("DB_USERNAME", "")
+	password := utils.GetEnv("DB_PASSWORD", "")
+	host := utils.GetEnv("DB_HOST", "")
+	port := utils.GetEnv("DB_PORT", "")
+	schema := utils.GetEnv("DB_SCHEMA", "")
+
+	err := config.ConnectDB(username, password, host, port, schema)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Database connected successfully")
+}
 
 // to convert Model data from csv to map
 func csvToMap(filePath string) (map[string]model.UniqueModel, error) {
