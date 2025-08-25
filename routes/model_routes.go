@@ -8,4 +8,5 @@ import (
 
 func ModelRoutes(r *gin.Engine) {
 	r.GET("/models", handler.GetModelHandler)
+	r.GET("/models/count", handler.GetModelCountHandler)
 }
