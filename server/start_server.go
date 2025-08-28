@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func StartServer() {
+func StartServer() error {
 	utils.LoadEnv()
 
 	serverPort := utils.GetEnv("SERVER_PORT", "")
@@ -17,5 +17,10 @@ func StartServer() {
 	r := gin.Default()
 	routes.ModelRoutes(r)
 	log.Println("Server started on port", serverPort)
-	r.Run(":" + serverPort)
+	err := r.Run(":" + serverPort)
+	if err != nil {
+		log.Println("Error starting server", err)
+		return err
+	}
+	return nil
 }

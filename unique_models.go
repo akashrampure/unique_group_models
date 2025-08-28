@@ -28,8 +28,7 @@ func init() {
 	fmt.Println("Database connected successfully")
 }
 
-// to convert Model data from csv to map
-func csvToMap(filePath string) (map[string]model.UniqueModel, error) {
+func getUniqueModelsFromCSV(filePath string) (map[string]model.UniqueModel, error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -62,64 +61,27 @@ func csvToMap(filePath string) (map[string]model.UniqueModel, error) {
 	return uniqueModels, nil
 }
 
-// to insert unique models to database
-func insertDataToDB(models map[string]model.UniqueModel) error {
+func insertUniqueModelsToDB(filePath string) error {
+	models, err := getUniqueModelsFromCSV(filePath)
+	if err != nil {
+		log.Fatalf("Error reading csv file: %v", err)
+	}
+
 	uniqueModels := make([]model.UniqueModel, 0, len(models))
 	for _, model := range models {
 		uniqueModels = append(uniqueModels, model)
 	}
 
-	err := service.CreateUniqueModels(uniqueModels)
+	err = service.CreateUniqueModels(uniqueModels)
 	if err != nil {
-		log.Println("Error creating models", err)
+		log.Println("Error inserting unique models to database", err)
 		return err
 	}
-	fmt.Println("Models created successfully")
+	fmt.Println("Unique models inserted to database successfully")
 	return nil
 }
 
-// to insert model count to database
-func insertModelCountToDB(models map[string]model.UniqueModelCount) error {
-	uniqueModels := make([]model.UniqueModelCount, 0, len(models))
-	for _, model := range models {
-		uniqueModels = append(uniqueModels, model)
-	}
-
-	err := service.CreateUniqueModelsCount(uniqueModels)
-	if err != nil {
-		log.Println("Error inserting models count to database", err)
-		return err
-	}
-	fmt.Println("Models count inserted to database successfully")
-	return nil
-}
-
-// to output unique models
-func outputDataToCSV(models map[string]model.UniqueModel) error {
-	file, err := os.Create("output.csv")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	if err := writer.Write([]string{"GroupID", "GroupName", "ModelId", "ModelName"}); err != nil {
-		return err
-	}
-
-	for _, model := range models {
-		if err := writer.Write([]string{model.GroupId, model.GroupName, model.ModelId, model.ModelName}); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// to get model count from csv file
-func modelCount(filePath string) (map[string]model.UniqueModelCount, error) {
+func getModelCountFromCSV(filePath string) (map[string]model.UniqueModelCount, error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -159,31 +121,46 @@ func modelCount(filePath string) (map[string]model.UniqueModelCount, error) {
 	return uniqueModels, nil
 }
 
+func insertModelCountToDB(filePath string) error {
+	models, err := getModelCountFromCSV(filePath)
+	if err != nil {
+		log.Fatalf("Error reading csv file: %v", err)
+	}
+
+	uniqueModels := make([]model.UniqueModelCount, 0, len(models))
+	for _, model := range models {
+		uniqueModels = append(uniqueModels, model)
+	}
+
+	err = service.CreateUniqueModelsCount(uniqueModels)
+	if err != nil {
+		log.Println("Error inserting model count to database", err)
+		return err
+	}
+	fmt.Println("Model count inserted to database successfully")
+	return nil
+}
+
 func main() {
-	// modelsCount, err := modelCount("/home/akash/Documents/getmyvds/data/No_of_devices_under_each_group.csv")
-	// if err != nil {
-	// 	log.Fatalf("Error reading csv file: %v", err)
-	// }
+	var err error
 
-	// err = insertModelCountToDB(modelsCount)
-	// if err != nil {
-	// 	log.Fatalf("Error inserting models count to database: %v", err)
-	// }
+	err = server.StartServer()
+	if err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 
-	server.StartServer()
+	if len(os.Args) < 2 {
+		log.Fatalf("Error: No file path provided")
+	}
+	filePath := os.Args[1]
 
-	// models, err := csvToMap("/home/akash/Documents/getmyvds/data/No_of_devices_under_each_group.csv")
-	// if err != nil {
-	// 	log.Fatalf("Error reading csv file: %v", err)
-	// }
+	err = insertModelCountToDB(filePath)
+	if err != nil {
+		log.Fatalf("Error inserting models count to database: %v", err)
+	}
 
-	// err = outputDataToCSV(models)
-	// if err != nil {
-	// 	log.Fatalf("Error writing csv file: %v", err)
-	// }
-
-	// err = insertDataToDB(models)
-	// if err != nil {
-	// 	log.Fatalf("Error inserting data to database: %v", err)
-	// }
+	err = insertUniqueModelsToDB(filePath)
+	if err != nil {
+		log.Fatalf("Error inserting data to database: %v", err)
+	}
 }
