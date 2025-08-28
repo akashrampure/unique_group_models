@@ -24,22 +24,8 @@ func GetModelHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, ApiResponse{
 		Message: "Models fetched successfully",
 		Data: map[string]interface{}{
-			"count":  len(models),
-			"models": models,
+			"total_models": len(models),
+			"models":       models,
 		},
-	})
-}
-
-func GetModelCountHandler(c *gin.Context) {
-	models, err := service.GetUniqueModelsCount()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, ApiResponse{
-			Error: "Error fetching models count",
-		})
-		return
-	}
-	c.JSON(http.StatusOK, ApiResponse{
-		Message: "Models count fetched successfully",
-		Data:    models,
 	})
 }

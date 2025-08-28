@@ -48,16 +48,27 @@ func getUniqueModelsFromCSV(filePath string) (map[string]model.UniqueModel, erro
 		modelid := record[1]
 		groupname := record[2]
 		modelname := record[3]
+		deviceid := record[4]
 
 		key := fmt.Sprintf("%s_%s", groupid, modelid)
 
-		uniqueModels[key] = model.UniqueModel{
-			GroupId:   groupid,
-			GroupName: groupname,
-			ModelId:   modelid,
-			ModelName: modelname,
+		if _, exists := uniqueModels[key]; !exists {
+			uniqueModels[key] = model.UniqueModel{
+				GroupId:   groupid,
+				GroupName: groupname,
+				ModelId:   modelid,
+				ModelName: modelname,
+				Count:     0,
+			}
+		}
+
+		if deviceid != "" {
+			m := uniqueModels[key]
+			m.Count++
+			uniqueModels[key] = m
 		}
 	}
+
 	return uniqueModels, nil
 }
 
@@ -81,66 +92,6 @@ func insertUniqueModelsToDB(filePath string) error {
 	return nil
 }
 
-func getModelCountFromCSV(filePath string) (map[string]model.UniqueModelCount, error) {
-	csvFile, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer csvFile.Close()
-
-	csvReader := csv.NewReader(csvFile)
-
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	uniqueModels := make(map[string]model.UniqueModelCount)
-	for _, record := range records[1:] {
-		groupid := record[0]
-		modelid := record[1]
-		deviceid := record[4]
-
-		key := fmt.Sprintf("%s_%s", groupid, modelid)
-
-		if _, exists := uniqueModels[key]; !exists {
-			uniqueModels[key] = model.UniqueModelCount{
-				GroupID: groupid,
-				ModelId: modelid,
-				Count:   0,
-			}
-		}
-
-		if deviceid != "" {
-			modelCount := uniqueModels[key]
-			modelCount.Count++
-			uniqueModels[key] = modelCount
-		}
-	}
-
-	return uniqueModels, nil
-}
-
-func insertModelCountToDB(filePath string) error {
-	models, err := getModelCountFromCSV(filePath)
-	if err != nil {
-		log.Fatalf("Error reading csv file: %v", err)
-	}
-
-	uniqueModels := make([]model.UniqueModelCount, 0, len(models))
-	for _, model := range models {
-		uniqueModels = append(uniqueModels, model)
-	}
-
-	err = service.CreateUniqueModelsCount(uniqueModels)
-	if err != nil {
-		log.Println("Error inserting model count to database", err)
-		return err
-	}
-	fmt.Println("Model count inserted to database successfully")
-	return nil
-}
-
 func main() {
 	var err error
 
@@ -153,11 +104,6 @@ func main() {
 		log.Fatalf("Error: No file path provided")
 	}
 	filePath := os.Args[1]
-
-	err = insertModelCountToDB(filePath)
-	if err != nil {
-		log.Fatalf("Error inserting models count to database: %v", err)
-	}
 
 	err = insertUniqueModelsToDB(filePath)
 	if err != nil {
