@@ -160,15 +160,15 @@ func modelCount(filePath string) (map[string]model.UniqueModelCount, error) {
 }
 
 func main() {
-	modelsCount, err := modelCount("/home/akash/Documents/getmyvds/data/No_of_devices_under_each_group.csv")
-	if err != nil {
-		log.Fatalf("Error reading csv file: %v", err)
-	}
+	// modelsCount, err := modelCount("/home/akash/Documents/getmyvds/data/No_of_devices_under_each_group.csv")
+	// if err != nil {
+	// 	log.Fatalf("Error reading csv file: %v", err)
+	// }
 
-	err = insertModelCountToDB(modelsCount)
-	if err != nil {
-		log.Fatalf("Error inserting models count to database: %v", err)
-	}
+	// err = insertModelCountToDB(modelsCount)
+	// if err != nil {
+	// 	log.Fatalf("Error inserting models count to database: %v", err)
+	// }
 
 	server.StartServer()
 
